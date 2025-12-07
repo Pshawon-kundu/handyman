@@ -2,14 +2,58 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { Link } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { authService } from "@/lib/services/authService";
+import { Link, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export default function AccountScreen() {
   const scheme = useColorScheme() ?? "light";
   const palette = Colors[scheme];
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const isLoggedIn = false; // placeholder; integrate auth state later
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const isAuth = await authService.isAuthenticated();
+      setIsLoggedIn(isAuth);
+
+      if (isAuth) {
+        const user = await authService.getCurrentUser();
+        setUserData(user);
+      }
+    } catch (error) {
+      console.error("Failed to check auth status:", error);
+      setIsLoggedIn(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", onPress: () => {} },
+      {
+        text: "Logout",
+        onPress: async () => {
+          try {
+            await authService.logout();
+            router.replace("/(auth)/login");
+          } catch (error) {
+            Alert.alert("Error", "Failed to logout. Please try again.");
+            console.error("Logout error:", error);
+          }
+        },
+        style: "destructive",
+      },
+    ]);
+  };
 
   return (
     <ThemedView
@@ -34,17 +78,6 @@ export default function AccountScreen() {
             { backgroundColor: palette.card, borderColor: palette.border },
           ]}
         >
-          {isLoggedIn ? (
-            <>
-              <ThemedText style={[styles.title, { color: palette.text }]}>
-                Welcome back
-              </ThemedText>
-              <ThemedText style={[styles.paragraph, { color: palette.muted }]}>
-                View and update your profile, payment details, and preferences.
-              </ThemedText>
-            </>
-          ) : (
-            <>
               <ThemedText style={[styles.title, { color: palette.text }]}>
                 You&apos;re not signed in
               </ThemedText>
@@ -53,7 +86,7 @@ export default function AccountScreen() {
               </ThemedText>
 
               <View style={{ marginTop: 12 }}>
-                <Link href="/auth/login" asChild>
+                <Link href="/(auth)/login" asChild>
                   <Pressable
                     style={[styles.btn, { backgroundColor: palette.tint }]}
                   >
@@ -64,7 +97,7 @@ export default function AccountScreen() {
                     </ThemedText>
                   </Pressable>
                 </Link>
-                <Link href="/auth/signup" asChild>
+                <Link href="/(auth)/signup" asChild>
                   <Pressable
                     style={[
                       styles.btnOutline,
@@ -79,9 +112,8 @@ export default function AccountScreen() {
                   </Pressable>
                 </Link>
               </View>
-            </>
-          )}
-        </View>
+            </View>
+        
       </ScrollView>
     </ThemedView>
   );

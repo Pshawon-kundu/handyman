@@ -23,7 +23,7 @@ export default function ContactPage() {
 
   const phone = "01717-52xx xx";
   const email = "support@handyconnect.com";
-  const website = "https://handyconnect.example";
+  const website = "https://handyconnect.com";
 
   const openPhone = () => Linking.openURL(`tel:${phone}`);
   const openEmail = () => Linking.openURL(`mailto:${email}`);

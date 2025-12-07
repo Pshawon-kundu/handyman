@@ -32,6 +32,12 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Demo accounts
+  const demoAccounts = [
+    { email: "pmahi@uiu.com", password: "password123", name: "Provat" },
+    { email: "pk@handyman.com", password: "pk123", name: "PK" },
+  ];
+
   const onSubmit = async () => {
     if (!email || !password) {
       Alert.alert("Missing fields", "Please enter both email and password.");
@@ -40,12 +46,33 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+      // For demo purposes, auto-login with any credentials
+      // In production, this would validate against backend
       await authService.login(email.trim(), password);
       router.replace("/(tabs)");
     } catch (err: any) {
       console.error("Login failed", err);
-      Alert.alert("Login failed", err?.message || "Unable to sign in.");
+      // Auto-create account for demo
+      try {
+        const fullName = email.split("@")[0];
+        await authService.signup(email.trim(), password, fullName);
+        router.replace("/(tabs)");
+      } catch (signupErr) {
+        Alert.alert("Login failed", "Please try again with demo account.");
+      }
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (demoEmail: string, demoPassword: string) => {
+    setLoading(true);
+    try {
+      await authService.login(demoEmail, demoPassword);
+      router.replace("/(tabs)");
+    } catch (error) {
+      console.error("Demo login error:", error);
+      Alert.alert("Error", "Failed to login. Please try again.");
       setLoading(false);
     }
   };
@@ -162,12 +189,61 @@ export default function LoginScreen() {
             </ThemedText>
           </Pressable>
 
+          {/* Demo Accounts Section */}
+          <View style={styles.demoSection}>
+            <ThemedText style={[styles.demoTitle, { color: palette.muted }]}>
+              Quick Login - Demo Accounts
+            </ThemedText>
+            <View style={styles.demoButtonsContainer}>
+              {demoAccounts.map((account, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() =>
+                    handleDemoLogin(account.email, account.password)
+                  }
+                  disabled={loading}
+                  style={[
+                    styles.demoBtn,
+                    {
+                      backgroundColor: palette.badge,
+                      opacity: loading ? 0.6 : 1,
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="person"
+                    size={16}
+                    color={palette.tint}
+                    style={{ marginRight: 6 }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <ThemedText
+                      style={[styles.demoBtnName, { color: palette.text }]}
+                    >
+                      {account.name}
+                    </ThemedText>
+                    <ThemedText
+                      style={[styles.demoBtnEmail, { color: palette.muted }]}
+                    >
+                      {account.email}
+                    </ThemedText>
+                  </View>
+                  <MaterialIcons
+                    name="arrow-forward"
+                    size={18}
+                    color={palette.tint}
+                  />
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
           <View style={styles.footerRow}>
             <ThemedText style={[styles.footerText, { color: palette.muted }]}>
-              New to HandyConnect?
+              Don't have an account?
             </ThemedText>
-            <Link href="/auth/signup" style={styles.linkWrap}>
-              <ThemedText type="link">Create account</ThemedText>
+            <Link href="/(auth)/signup" style={styles.linkWrap}>
+              <ThemedText type="link">Sign up here</ThemedText>
             </Link>
           </View>
         </View>
@@ -328,5 +404,35 @@ const styles = StyleSheet.create({
   },
   linkWrap: {
     paddingVertical: 6,
+  },
+  demoSection: {
+    gap: 10,
+    marginTop: 8,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  demoTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  demoButtonsContainer: {
+    gap: 8,
+  },
+  demoBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 10,
+  },
+  demoBtnName: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  demoBtnEmail: {
+    fontSize: 12,
   },
 });

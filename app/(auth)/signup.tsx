@@ -172,7 +172,7 @@ export default function SignupScreen() {
             <ThemedText style={[styles.footerText, { color: palette.muted }]}>
               Already have an account?
             </ThemedText>
-            <Link href="/auth/login" style={styles.linkWrap}>
+            <Link href="/(auth)/login" style={styles.linkWrap}>
               <ThemedText type="link">Log in</ThemedText>
             </Link>
           </View>

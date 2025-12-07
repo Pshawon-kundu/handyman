@@ -25,7 +25,7 @@ export default function ProfileScreen() {
           setIsLoggedIn(false);
           // Navigate to login - using window.location for now
           if (typeof window !== "undefined") {
-            window.location.href = "/auth/login";
+            window.location.href = "/(auth)/login";
           }
         },
       },

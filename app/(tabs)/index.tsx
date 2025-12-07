@@ -426,7 +426,7 @@ export default function HomeScreen() {
               { color: palette.text, paddingHorizontal: 16 },
             ]}
           >
-            38 Service Providers
+            8 Service Providers
           </ThemedText>
           <Pressable
             style={[
@@ -737,8 +737,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
-    width: 8,
-    height: 8,
+    width: 10,
+    height: 10,
     borderRadius: 4,
     backgroundColor: "#ef4444",
   },
